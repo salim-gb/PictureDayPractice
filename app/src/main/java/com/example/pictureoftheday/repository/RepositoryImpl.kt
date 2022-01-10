@@ -15,17 +15,17 @@ class RepositoryImpl : Repository {
     ) {
         RetrofitInstance.pictureOfTheDayApi.getPictureOfTheDayRequest(
             date,
-            BuildConfig.NASA_API_KEY
+            "70Rxxb1cn9GwhiVrerxIe9quGiwCegsLs58yX3mh"
         ).enqueue(callback)
     }
 
     override fun getEarthDataFromServer(date: String, callback: Callback<EarthResponseData>) {
-        RetrofitInstance.earthApi.getEarthPicture(date, dim = 0.10f, BuildConfig.NASA_API_KEY)
+        RetrofitInstance.earthApi.getEarthPicture(date, dim = 0.10f, "70Rxxb1cn9GwhiVrerxIe9quGiwCegsLs58yX3mh")
             .enqueue(callback)
     }
 
     override fun getMarsDataFromServer(date: String, callback: Callback<MarsPictureData>) {
-        RetrofitInstance.marsApi.getMarsPicture(date, BuildConfig.NASA_API_KEY)
+        RetrofitInstance.marsApi.getMarsPicture(date, "70Rxxb1cn9GwhiVrerxIe9quGiwCegsLs58yX3mh")
             .enqueue(callback)
     }
 }

@@ -1,6 +1,7 @@
 package com.example.pictureoftheday.model
 
 import android.os.Parcelable
+import com.example.pictureoftheday.repository.ListResponse
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -13,4 +14,4 @@ data class PictureOfTheDayResponseData(
     @field:SerializedName("title") val title: String?,
     @field:SerializedName("url") val url: String?,
     @field:SerializedName("hdurl") val hdurl: String?,
-) : Parcelable
+) : Parcelable, ListResponse

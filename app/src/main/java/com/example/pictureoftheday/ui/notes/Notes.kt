@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pictureoftheday.R
@@ -13,6 +14,7 @@ import com.example.pictureoftheday.databinding.NotesFragmentBinding
 import com.example.pictureoftheday.model.NoteBig
 import com.example.pictureoftheday.model.NoteSmall
 import com.example.pictureoftheday.util.AdapterDelegates
+import com.example.pictureoftheday.util.CommonCallbackImpl
 import com.example.pictureoftheday.util.HeaderAdapter
 import com.example.pictureoftheday.util.ListItem
 import java.util.*
@@ -26,20 +28,33 @@ class Notes : Fragment(R.layout.notes_fragment) {
         NotesViewModelFactory()
     }
 
+    var items = emptyList<ListItem>()
+        set(value) {
+            val callback = CommonCallbackImpl(
+                oldItems = field,
+                newItems = value,
+            )
+            field = value
+
+            val diffResult = DiffUtil.calculateDiff(callback)
+            adapter.currentList = field
+            diffResult.dispatchUpdatesTo(adapter)
+        }
+
+    private val adapter = AdapterDelegates(
+        delegates = listOf(
+            NoteSmallDelegate(),
+            NoteBigDelegate()
+        )
+    ) { listItem ->
+        adapterOnClick((listItem))
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = NotesFragmentBinding.bind(view)
 
         val headerAdapter = HeaderAdapter()
-
-        val adapter = AdapterDelegates(
-            delegates = listOf(
-                NoteSmallDelegate(),
-                NoteBigDelegate()
-            )
-        ) { listItem ->
-            adapterOnClick((listItem))
-        }
 
         val concatAdapter = ConcatAdapter(headerAdapter, adapter)
 
@@ -55,15 +70,15 @@ class Notes : Fragment(R.layout.notes_fragment) {
             ): Boolean {
                 val fromPos: Int = viewHolder.bindingAdapterPosition
                 val toPos: Int = target.bindingAdapterPosition
-                val list = adapter.currentList.toMutableList()
+                val list = items.toMutableList()
                 Collections.swap(list, fromPos, toPos)
-                adapter.currentList = list
+                items = list
                 return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
-                val mList = adapter.currentList.toMutableList()
+                val mList = items.toMutableList()
                 val note = mList[position]
                 viewModel.removeNote(note)
             }
@@ -74,7 +89,7 @@ class Notes : Fragment(R.layout.notes_fragment) {
 
         viewModel.notesLiveData.observe(viewLifecycleOwner) {
             it?.let {
-                adapter.currentList = (it as MutableList<ListItem>)
+                items = (it as MutableList<ListItem>)
                 headerAdapter.updateNotesCount(it.size)
             }
         }

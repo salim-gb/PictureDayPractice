@@ -65,22 +65,7 @@ class Home : Fragment(R.layout.home_fragment) {
             }
         }
 
-        binding.chipGroup.apply {
-            when (viewModel.selectedDay.value) {
-                0 -> {
-                    check(R.id.chipToday)
-                }
-                -1 -> {
-                    check(R.id.chipYesterday)
-                }
-                -2 -> {
-                    check(R.id.chipBeforeYesterday)
-                }
-                else -> {
-                    clearCheck()
-                }
-            }
-        }
+        setGroupChipState(viewModel.selectedDay.value)
 
         binding.datePickerHome.setOnClickListener {
             datePicker.show(parentFragmentManager, "date picker")
@@ -112,15 +97,16 @@ class Home : Fragment(R.layout.home_fragment) {
         binding.chipHdRes.setOnCheckedChangeListener { _, isChecked ->
             viewModel.liveData.value?.let {
                 if (it is AppState.Success) {
-                    if (it.data is PictureOfTheDayResponseData) {
+                    val data = it.data
+                    if (data is PictureOfTheDayResponseData) {
                         CoilHelper.loadWithCoil(
                             binding.customImageView,
                             when (isChecked) {
                                 true -> {
                                     animateChip(binding.chipHdRes)
-                                    it.data.hdurl
+                                    data.hdurl
                                 }
-                                false -> it.data.url
+                                false -> data.url
                             },
                             binding.loadingProgressBar
                         )
@@ -138,6 +124,25 @@ class Home : Fragment(R.layout.home_fragment) {
         }
     }
 
+    private fun setGroupChipState(selectedDay: Int?) {
+        with(binding.chipGroup) {
+            when (selectedDay) {
+                0 -> {
+                    check(R.id.chipToday)
+                }
+                -1 -> {
+                    check(R.id.chipYesterday)
+                }
+                -2 -> {
+                    check(R.id.chipBeforeYesterday)
+                }
+                else -> {
+                    clearCheck()
+                }
+            }
+        }
+    }
+
     private fun renderData(appState: AppState) {
         when (appState) {
             is AppState.Error -> {
@@ -150,8 +155,9 @@ class Home : Fragment(R.layout.home_fragment) {
             }
             is AppState.Success -> {
                 binding.loadingProgressBar.visibility = View.GONE
-                if (appState.data is PictureOfTheDayResponseData) {
-                    showDetails(appState.data)
+                val data = appState.data
+                if (data is PictureOfTheDayResponseData) {
+                    showDetails(data)
                 }
             }
         }
